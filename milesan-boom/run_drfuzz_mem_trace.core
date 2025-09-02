@@ -1,0 +1,83 @@
+CAPI=2:
+# Copyright 2022 Flavien Solt, ETH Zurich.
+# Licensed under the General Public License, Version 3.0, see LICENSE for details.
+# SPDX-License-Identifier: GPL-3.0-only
+name: "::run_drfuzz_mem_trace:0.1"
+description: "Run on drfuzz with memory module and tracing enabled"
+
+filesets:
+  files_cells:
+    depend: []
+    files:
+      - /mnt/milesan-meta/design-processing/common/src/ift_sram_mem.sv
+      - src/top_tiny_soc_drfuzz_mem.sv
+      - generated/out/drfuzz_mem.sv
+    file_type: systemVerilogSource
+
+  files_dv:
+    files:
+      - /mnt/milesan-meta/design-processing/common/dv/elf.h : {is_include_file: true}
+      - /mnt/milesan-meta/design-processing/common/dv/elfloader.cc
+      - /mnt/milesan-meta/design-processing/common/dv/taintloader.cc
+      - /mnt/milesan-meta/design-processing/common/dv/common_functions.cc
+      - /mnt/milesan-meta/design-processing/common/dv/ticks.h : {is_include_file: true}
+      - dv/shared_mem/def_tb.h : {is_include_file: true}
+      - dv/drfuzz_mem/def_inst.h : {is_include_file: true}
+      - dv/shared_mem/update_req.cc
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/dtypes.h : {is_include_file: true}
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/update_req.h : {is_include_file: true}
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/helperfuncs.h : {is_include_file: true}
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/macros.h : {is_include_file: true}
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/testbench.h : {is_include_file: true}
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/queue.h : {is_include_file: true}
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/queue.cc
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/helperfuncs.cc
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/testbench.cc
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/toplevel.cc
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/dtypes.cc
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/corpus.cc
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/corpus.h  : {is_include_file: true}
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/mutator.cc
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/mutator.h  : {is_include_file: true}
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/afl.h  : {is_include_file: true}
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/riscv/instructions.h  : {is_include_file: true}
+      - /mnt/milesan-meta/design-processing/common/dv/drfuzz_mem/riscv/isa_masks.h  : {is_include_file: true}
+
+    file_type: cppSource
+
+targets:
+  default:
+    default_tool: verilator
+    filesets:
+      - files_cells
+      - files_dv
+    toplevel: top_tiny_soc
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+          - '-CFLAGS "-std=c++11 -Wall -DIS_VANILLA -DTOPLEVEL_NAME=ibex_tiny_soc -O0"'
+          - '-LDFLAGS "-pthread -lutil -ljsoncpp"'
+          - '--trace'
+          - '--trace-max-array 2048'
+          - '-DSYNTHESIS=1'
+          - "-Wall"
+          - "-Wno-PINCONNECTEMPTY"
+          - "-Wno-fatal"
+          - "-Wno-EOFNEWLINE"
+          - "-Wno-DECLFILENAME"
+          - "-Wno-PINMISSING"
+          - "-Wno-UNUSEDPARAM"
+          - "-Wno-WIDTH"
+          - "-Wno-UNUSEDSIGNAL"
+          - "-Wno-CASEOVERLAP"
+          - "-Wno-CASEINCOMPLETE"
+          - "-Wno-BLKSEQ"
+          - "-Wno-UNDRIVEN"
+          - "-Wno-TIMESCALEMOD"
+          - "-Wno-PINNOTFOUND"
+          - "-Wno-UNOPTFLAT"
+          - "-Wno-IMPLICIT"
+          - "-Wno-CMPCONST"
+          - "-Wno-SYNCASYNCNET"
+
